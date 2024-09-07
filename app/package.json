@@ -9,5 +9,7 @@
   "main": "main.js",
   "private": true,
   "dependencies": {
+    "ngx-electronyzer": "^18.1.0",
+    "npm-check-updates": "^17.1.1"
   }
 }
