@@ -1,4 +1,5 @@
 import {app, BrowserWindow, screen} from 'electron';
+import {Ipc} from './ipc';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -81,3 +82,6 @@ try {
   // Catch Error
   // throw e;
 }
+
+
+Ipc.init();
