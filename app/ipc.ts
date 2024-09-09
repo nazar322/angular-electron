@@ -1,35 +1,39 @@
-import { ipcMain, utilityProcess } from 'electron';
+import { ipcMain } from 'electron';
 import { spawn } from 'child_process';
+import { win } from './main';
 
 export class Ipc {
     static init(): void {
-        ipcMain.handle('get-media-info', async (event, args) => {
-            console.log(args.url);
+        // Subscribe for media info request
+        ipcMain.on('get-media-info', this.onGetMediaInfo);
+    }
 
-            const ytdlp = spawn('C:\\Users\\Acer\\Downloads\\yt-dlp_win\\yt-dlp.exe', 
-                ['--write-info', '--dump-json', '--skip-download', args.url], {stdio: 'pipe'});
+    private static onGetMediaInfo(event: Electron.IpcMainEvent, args: any): void {
+        // Do work
+        const ytdlp = spawn('C:\\Users\\Acer\\Downloads\\yt-dlp_win\\yt-dlp.exe',
+            ['--write-info', '--dump-json', '--skip-download', '--no-warnings', args.url], 
+            { stdio: 'pipe' });
 
-            ytdlp.on('spawn', () => {
-                console.log(`yt-dlp (${ytdlp.pid}) spawned`);
+        // When worker has spawned
+        ytdlp.on('spawn', () => {
+            console.log(`yt-dlp (${ytdlp.pid}) spawned`);
 
-                ytdlp.stdout?.on('data', (data) => {
-                    console.log(`stdout ${data}`);
-                });
-
-                ytdlp.stderr?.on('data', (data) => {
-                    console.log(`stderr ${data}`);
-                });
+            ytdlp.stdout?.on('data', (data: Buffer) => {
+                // Report worker's result
+                win?.webContents.send('get-media-info-response', data.toString());
             });
 
-            ytdlp.on('exit', (code) => {
-                console.log(`yt-dlp has exited (${code})`);
+            ytdlp.stderr?.on('data', (data) => {
+                console.log(`stderr: ${data}`);
             });
+        });
 
-            ytdlp.on('error', (error) => {
-                console.log(`yt-dlp error: ${error}`);
-            });
+        ytdlp.on('exit', (code) => {
+            console.log(`yt-dlp has exited (${code})`);
+        });
 
-            return 'Ok';
+        ytdlp.on('error', (error) => {
+            console.log(`yt-dlp error: ${error}`);
         });
     }
 }

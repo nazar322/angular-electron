@@ -3,7 +3,7 @@ import {Ipc} from './ipc';
 import * as path from 'path';
 import * as fs from 'fs';
 
-let win: BrowserWindow | null = null;
+export let win: BrowserWindow | null = null;
 const args = process.argv.slice(1),
   serve = args.some(val => val === '--serve');
 
@@ -13,8 +13,8 @@ function createWindow(): BrowserWindow {
 
   // Create the browser window.
   win = new BrowserWindow({
-    x: 0,
-    y: 0,
+    x: 50,
+    y: 50,
     width: 800,//size.width,
     height: 600,//size.height,
     webPreferences: {

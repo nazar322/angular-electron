@@ -11,17 +11,20 @@ import { IpcRenderer } from 'electron';
 export class HomeComponent implements OnInit {
 
   constructor(private router: Router,
-    private electronService: ElectronService) { }
+    private electronService: ElectronService) { 
+      electronService.ipcRenderer.once('get-media-info-response', this.onMediaInfoReceived);
+    }
 
   ngOnInit(): void {
     console.log('HomeComponent INIT');
   }
 
   test(): void {
-    this.electronService.ipcRenderer.invoke('get-media-info', {url: 'https://www.youtube.com/watch?v=8mM5Oks8yZc'})
-      .then((result) => {
-        console.log(result);
-      });
+    this.electronService.ipcRenderer.send('get-media-info', {url: 'https://www.youtube.com/watch?v=8mM5Oks8yZc'});
   }
 
+  private onMediaInfoReceived(event: Electron.IpcRendererEvent, args: string): void {
+    var info = JSON.parse(args);
+    console.log(info);
+  }
 }
