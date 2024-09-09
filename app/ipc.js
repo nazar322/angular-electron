@@ -11,7 +11,15 @@ class Ipc {
         electron_1.ipcMain.on('get-media-info', this.onGetMediaInfo);
     }
     static onGetMediaInfo(event, args) {
-        const ytdlpPath = path.join(__dirname, `/yt-dlp/${process.platform}/yt-dlp.exe`);
+        let ytdlpPath = '';
+        switch (process.platform) {
+            case 'win32':
+                ytdlpPath = path.join(process.resourcesPath, `/app/yt-dlp/win/yt-dlp.exe`);
+                break;
+            case 'darwin':
+                ytdlpPath = path.join(process.resourcesPath, `/app/yt-dlp/osx/yt-dlp`);
+                break;
+        }
         // Do work
         const ytdlp = (0, child_process_1.spawn)(ytdlpPath, ['--write-info', '--dump-json', '--skip-download', '--no-warnings', args.url], { stdio: 'pipe' });
         // When worker has spawned

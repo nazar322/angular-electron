@@ -10,7 +10,17 @@ export class Ipc {
     }
 
     private static onGetMediaInfo(event: Electron.IpcMainEvent, args: any): void {
-        const ytdlpPath = path.join(__dirname, `/yt-dlp/${process.platform}/yt-dlp.exe`);
+        let ytdlpPath: string = '';
+
+        switch (process.platform) {
+            case 'win32':
+                ytdlpPath = path.join(process.resourcesPath, `/app/yt-dlp/win/yt-dlp.exe`);
+                break;
+
+            case 'darwin':
+                ytdlpPath = path.join(process.resourcesPath, `/app/yt-dlp/osx/yt-dlp`);
+                break;
+        }
         
         // Do work
         const ytdlp = spawn(ytdlpPath,
