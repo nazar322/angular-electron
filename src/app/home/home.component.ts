@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { ElectronService } from 'ngx-electronyzer';
 import { IpcRenderer } from 'electron';
@@ -10,9 +10,17 @@ import { IpcRenderer } from 'electron';
 })
 export class HomeComponent implements OnInit {
 
+  url:  string = '';
+  info: string = '';
+
   constructor(private router: Router,
+    private ngZone: NgZone,
     private electronService: ElectronService) { 
-      electronService.ipcRenderer.once('get-media-info-response', this.onMediaInfoReceived);
+      electronService.ipcRenderer.once('get-media-info-response', (event, args) => {
+        this.ngZone.run(() => {
+          this.onMediaInfoReceived(args);
+        });
+      });
     }
 
   ngOnInit(): void {
@@ -20,11 +28,12 @@ export class HomeComponent implements OnInit {
   }
 
   test(): void {
-    this.electronService.ipcRenderer.send('get-media-info', {url: 'https://www.youtube.com/watch?v=8mM5Oks8yZc'});
+    this.electronService.ipcRenderer.send('get-media-info', {url: this.url});
   }
 
-  private onMediaInfoReceived(event: Electron.IpcRendererEvent, args: string): void {
-    var info = JSON.parse(args);
-    console.log(info);
+  private onMediaInfoReceived(info: string): void {
+    const json = JSON.parse(info);
+    console.log(json);
+    this.info = info;
   }
 }

@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import { spawn } from 'child_process';
 import { win } from './main';
+import * as path from 'path';
 
 export class Ipc {
     static init(): void {
@@ -9,8 +10,10 @@ export class Ipc {
     }
 
     private static onGetMediaInfo(event: Electron.IpcMainEvent, args: any): void {
+        const ytdlpPath = path.join(__dirname, `/yt-dlp/${process.platform}/yt-dlp.exe`);
+        
         // Do work
-        const ytdlp = spawn('C:\\Users\\Acer\\Downloads\\yt-dlp_win\\yt-dlp.exe',
+        const ytdlp = spawn(ytdlpPath,
             ['--write-info', '--dump-json', '--skip-download', '--no-warnings', args.url], 
             { stdio: 'pipe' });
 
