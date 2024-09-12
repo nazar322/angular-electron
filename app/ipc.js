@@ -14,32 +14,27 @@ class Ipc {
         let ytdlpPath = '';
         switch (process.platform) {
             case 'win32':
-                ytdlpPath = path.join(process.resourcesPath, `/app/yt-dlp/win/yt-dlp.exe`);
+                ytdlpPath = electron_1.app.isPackaged
+                    ? path.join(process.resourcesPath, '/app/yt-dlp/win/yt-dlp.exe')
+                    : path.join(__dirname, '/yt-dlp/win/yt-dlp.exe');
                 break;
             case 'darwin':
-                ytdlpPath = path.join(process.resourcesPath, `/app/yt-dlp/osx/yt-dlp`);
+                ytdlpPath = electron_1.app.isPackaged
+                    ? path.join(process.resourcesPath, '/app/yt-dlp/osx/yt-dlp')
+                    : path.join(__dirname, '/yt-dlp/osx/yt-dlp');
                 break;
         }
         // Do work
-        const ytdlp = (0, child_process_1.spawn)(ytdlpPath, ['--write-info', '--dump-json', '--skip-download', '--no-warnings', args.url], { stdio: 'pipe' });
-        // When worker has spawned
-        ytdlp.on('spawn', () => {
-            var _a, _b;
-            console.log(`yt-dlp (${ytdlp.pid}) spawned`);
-            (_a = ytdlp.stdout) === null || _a === void 0 ? void 0 : _a.on('data', (data) => {
-                // Report worker's result
-                main_1.win === null || main_1.win === void 0 ? void 0 : main_1.win.webContents.send('get-media-info-response', data.toString());
-            });
-            (_b = ytdlp.stderr) === null || _b === void 0 ? void 0 : _b.on('data', (data) => {
-                console.log(`stderr: ${data}`);
-            });
-        });
-        ytdlp.on('exit', (code) => {
-            console.log(`yt-dlp has exited (${code})`);
-        });
-        ytdlp.on('error', (error) => {
-            console.log(`yt-dlp error: ${error}`);
-        });
+        const ytdlp = (0, child_process_1.spawnSync)(ytdlpPath, ['--write-info', '--dump-json', '--skip-download', '--no-warnings', args.url], { stdio: 'pipe' });
+        if (ytdlp.error) {
+            console.log(`yt-dlp error: ${ytdlp.error}`);
+        }
+        else if (ytdlp.stderr && ytdlp.stderr.length > 0) {
+            console.log(`stderr: ${ytdlp.stderr.toString()}`);
+        }
+        else if (ytdlp.status === 0) {
+            main_1.win === null || main_1.win === void 0 ? void 0 : main_1.win.webContents.send('get-media-info-response', ytdlp.stdout.toString());
+        }
     }
 }
 exports.Ipc = Ipc;
